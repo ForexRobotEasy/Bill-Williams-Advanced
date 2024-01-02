@@ -1,0 +1,81 @@
+
+//+------------------------------------------------------------------+
+//|                                                       Bill Williams Advanced |
+//|                                                   forexroboteasy.com |
+//|                                                      Forex Robot Easy Team |
+//+------------------------------------------------------------------+
+
+//--- Include necessary libraries
+#include <Trade\Trade.mqh>
+#include <Indicators\BillWilliams\AcceleratorOscillator.mqh>
+#include <Indicators\BillWilliams\AwesomeOscillator.mqh>
+#include <Indicators\BillWilliams\Fractals.mqh>
+
+//--- Define constants
+#define TP_FACTOR    2      // Take profit factor
+#define SL_FACTOR    1.5    // Stop loss factor
+
+//--- Define variables
+CTrade trade;               // Trade object
+CAcceleratorOscillator ac;   // Accelerator Oscillator object
+CAwesomeOscillator ao;      // Awesome Oscillator object
+CFractals fr;               // Fractals object
+
+//+------------------------------------------------------------------+
+//| Expert initialization function |
+//+------------------------------------------------------------------+
+int OnInit()
+{
+   //--- Set trading parameters
+   trade.SetDeviationInPoints(10);
+   trade.SetExpertMagicNumber(123456);
+
+   //--- Set chart indicators
+   ac.Create();
+   ao.Create();
+   fr.Create();
+
+   return(INIT_SUCCEEDED);
+}
+
+//+------------------------------------------------------------------+
+//| Expert deinitialization function |
+//+------------------------------------------------------------------+
+void OnDeinit(const int reason)
+{
+   //--- Delete chart indicators
+   ac.Delete();
+   ao.Delete();
+   fr.Delete();
+}
+
+//+------------------------------------------------------------------+
+//| Expert tick function |
+//+------------------------------------------------------------------+
+void OnTick()
+{
+   //--- Check for potential trading signals
+   if (ac.MACD(0) > 0 && ao.OSC(0) > 0 && fr.BuySignal(0))
+   {
+      //--- Open a long position
+      trade.Buy(Lots, Ask, Ask - StopLevel * SL_FACTOR, Ask + StopLevel * TP_FACTOR);
+   }
+   else if (ac.MACD(0) < 0 && ao.OSC(0) < 0 && fr.SellSignal(0))
+   {
+      //--- Open a short position
+      trade.Sell(Lots, Bid, Bid + StopLevel * SL_FACTOR, Bid - StopLevel * TP_FACTOR);
+   }
+}
+
+//+------------------------------------------------------------------+
+//| Expert start function |
+//+------------------------------------------------------------------+
+void OnStart()
+{
+   //--- Display trading signals in a table
+   Comment('Potential Trading Signals:');
+   Comment('Buy Signal: ', fr.BuySignal(0));
+   Comment('Sell Signal: ', fr.SellSignal(0));
+}
+
+//+------------------------------------------------------------------+
